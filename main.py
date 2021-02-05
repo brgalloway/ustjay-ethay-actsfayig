@@ -6,9 +6,10 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-
+template = """
+{}
+"""
 def get_fact():
-
     response = requests.get("http://unkno.com")
 
     soup = BeautifulSoup(response.content, "html.parser")
@@ -16,11 +17,17 @@ def get_fact():
 
     return facts[0].getText()
 
+def return_results(fact):
+    response = requests.post('https://hidden-journey-62459.herokuapp.com/piglatinize/',
+                             data={'input_text': fact})
+
+    return response.headers
 
 @app.route('/')
 def home():
-    return "FILL ME!"
-
+    fact = get_fact().strip()
+    body = return_results(fact)
+    return Response(response=body, mimetype="text/html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 6787))
