@@ -1,14 +1,11 @@
 import os
 
 import requests
-from flask import Flask, send_file, Response
+from flask import Flask, send_file, Response, render_template
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-template = """
-{}
-"""
 def get_fact():
     response = requests.get("http://unkno.com")
 
@@ -18,18 +15,14 @@ def get_fact():
     return facts[0].getText()
 
 def return_results(fact):
-    response = requests.post('https://hidden-journey-62459.herokuapp.com/piglatinize/',
-                             data={'input_text': fact})
-
-    return response.headers
+    return requests.post('https://hidden-journey-62459.herokuapp.com/piglatinize/',
+                             data={'input_text': fact}).url
 
 @app.route('/')
 def home():
     fact = get_fact().strip()
-    body = return_results(fact)
-    return Response(response=body, mimetype="text/html")
+    return render_template('base.jinja2', body=return_results(fact))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 6787))
     app.run(host='0.0.0.0', port=port)
-
